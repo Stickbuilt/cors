@@ -3,7 +3,7 @@ package cors
 import (
 	"net/http"
 
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 )
 
 type cors struct {
@@ -32,13 +32,12 @@ func newCors(config Config) *cors {
 
 func (cors *cors) applyCors(c *gin.Context) {
 	origin := c.Request.Header.Get("Origin")
-	if len(origin) == 0 {
-		// request is not a CORS request
-		return
-	}
-	if !cors.validateOrigin(origin) {
-		c.AbortWithStatus(http.StatusForbidden)
-		return
+
+	if !cors.allowAllOrigins {
+		if len(origin) == 0 || !cors.validateOrigin(origin) {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
 	}
 
 	if c.Request.Method == "OPTIONS" {
